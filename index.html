@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="manifest" href="manifest.json">
+    <title>Громкая музыка</title>
+</head>
+<body style="background: black; margin: 0; width: 100vw; height: 100vh; display: flex; align-items: center; justify-content: center;">
+    <script>
+        let audioCtx, gainNode, source;
+
+        async function playAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                gainNode = audioCtx.createGain();
+                gainNode.gain.value = 5; // Повышенная громкость
+
+                const response = await fetch("k.mp3");
+                const data = await response.arrayBuffer();
+                const buffer = await audioCtx.decodeAudioData(data);
+
+                source = audioCtx.createBufferSource();
+                source.buffer = buffer;
+                source.loop = true;
+                source.connect(gainNode).connect(audioCtx.destination);
+                source.start(0);
+            } else {
+                audioCtx.resume(); // Если звук уже запущен, продолжить воспроизведение
+            }
+        }
+
+        document.body.addEventListener("click", playAudio);
+
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js');
+        }
+    </script>
+</body>
+</html>
